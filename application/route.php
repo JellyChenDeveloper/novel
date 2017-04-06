@@ -8,6 +8,11 @@
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
+use think\Route;
+
+Route::get('/top/allvisit_<curpage>/$', 'index', [], ['curpage' => '\d+']);
+Route::get('/<cata>_<bookno>/$', 'chapters', [], ['cata' => '\d+', 'bookno' => '\d+']);
+Route::get('/<cata>_<bookno>/:chapno', 'content', ['ext'=>'html'], ['cata' => '\d+', 'bookno' => '\d+','chapno'=>'\d+']);
 
 return [
     '__pattern__' => [

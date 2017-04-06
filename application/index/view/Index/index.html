@@ -1,0 +1,38 @@
+<style>
+    ul {
+        list-style: none;
+    }
+
+    ul li {
+        display: block;
+    }
+
+    img {
+        float: left;
+        height: 60px;
+        width: 30px;
+    }
+</style>
+<ul>
+    {{foreach $articles as $val }}
+    <li>
+        <div>
+            <span><a href="{{$val.url}}"><img src="{{$val['picurl']}}"></a></span>
+            <span>
+                <div><a href="{{$val.url}}">{{$val.title}}</a></div>
+                <div>作者：<a href="{{$val.authurl}}">{{$val.auth}}</a></div>
+                <div>{{$val.details}}</div>
+            </span>
+        </div>
+    </li>
+    {{/foreach}}
+</ul>
+
+<div class="page">
+    {{foreach $pages.links as $val }}
+    <a href="{{$val['href']}}">{{$val['name']}}</a>
+    {{/foreach}}
+</div>
+<div class="page2">
+    <span>当前第{{$pages.num.cur}}页，共{{$pages.num.total}}页</span>
+</div>

@@ -1,10 +1,92 @@
 <?php
 namespace app\index\controller;
 
-class Index
-{
-    public function index()
-    {
-        return '<style type="text/css">*{ padding: 0; margin: 0; } .think_default_text{ padding: 4px 48px;} a{color:#2E5CD5;cursor: pointer;text-decoration: none} a:hover{text-decoration:underline; } body{ background: #fff; font-family: "Century Gothic","Microsoft yahei"; color: #333;font-size:18px} h1{ font-size: 100px; font-weight: normal; margin-bottom: 12px; } p{ line-height: 1.6em; font-size: 42px }</style><div style="padding: 24px 48px;"> <h1>:)</h1><p> ThinkPHP V5<br/><span style="font-size:30px">十年磨一剑 - 为API开发设计的高性能框架</span></p><span style="font-size:22px;">[ V5.0 版本由 <a href="http://www.qiniu.com" target="qiniu">七牛云</a> 独家赞助发布 ]</span></div><script type="text/javascript" src="http://tajs.qq.com/stats?sId=9347272" charset="UTF-8"></script><script type="text/javascript" src="http://ad.topthink.com/Public/static/client.js"></script><thinkad id="ad_bd568ce7058a1091"></thinkad>';
+//ini_set('memory_limit', '512M');
+use HtmlParser\ParserDom;
+use think\Controller;
+
+class Index extends Controller {
+
+    private $baseurl  = 'http://m.111bz.org/';
+    private $baseurl1 = 'http://www.111bz.org/';
+
+    public function index($curpage = 0) {
+        $topurl = $this->baseurl . 'top/';
+        if ($curpage != 0) {
+            $topurl = $topurl . 'allvisit_' . $curpage . '/';
+        }
+
+        $sHtml = file_get_contents($topurl);
+        $html  = new ParserDom($sHtml);
+
+        $articles = array();
+        foreach ($html->find('ul.xbk') as $article) {
+            $item['title']   = trim($article->find('.tjxs span', 0)->find('a', 0)->getPlainText());
+            $item['url']     = $article->find('.tjxs span', 0)->find('a', 0)->getAttr('href');
+            $item['auth']    = trim($article->find('.tjxs span', 1)->find('a', 0)->getPlainText());
+            $item['authurl'] = $article->find('.tjxs span', 1)->find('a', 0)->getAttr('href');
+            $item['picurl']  = $article->find('.tjimg a img', 0)->getAttr('src');
+            $item['details'] = trim($article->find('.tjxs span', 2)->getPlainText());
+            $articles[]      = $item;
+        }
+        $pages = array();
+
+        for ($i = 0; $i < 4; $i++) {
+            if ($href = $html->find('div.page a', $i)) {
+                $tmpPage['href']  = $href->getAttr('href');
+                $tmpPage['name']  = $href->getPlainText();
+                $pages['links'][] = $tmpPage;
+            }
+        }
+        $total = $html->find('div.page2', 0)->getPlainText();
+        preg_match("/(\d+)\/(\d+)/i", $total, $matches);
+        $pages['num']['cur']   = $matches[1];
+        $pages['num']['total'] = $matches[2];
+
+        $this->assign('articles', $articles);
+        $this->assign('pages', $pages);
+
+        return $this->fetch();
+    }
+
+    public function chapters($cata = 0, $bookno = 0) {
+        $chapurl = $this->baseurl1 . $cata . '_' . $bookno . '/';
+
+        $sHtml = file_get_contents($chapurl);
+        $html  = new ParserDom($sHtml);
+
+        $chapters = $html->find('div.box_con div#list dl', 0)->outerHtml();
+        $bookname = $html->find('div#info h1',0)->getPlainText();
+
+        $this->assign('name', $bookname);
+        $this->assign('chapters', $chapters);
+
+        return $this->fetch();
+    }
+
+    public function content($cata = 0, $bookno = 0, $chapno) {
+        $conturl = $this->baseurl . $cata . '_' . $bookno . '/' . $chapno . '.html';
+
+        $sHtml = file_get_contents($conturl);
+        $html  = new ParserDom($sHtml);
+
+        $name    = $html->find('header#header div.zhong', 0)->getPlainText();
+        $content = $html->find('article#nr', 0)->innerHtml();
+
+        foreach ($html->find('div.nr_page a.dise') as $tpage) {
+            if ($tpage->getPlainText() == '上一章') {
+                $page['prev'] = $tpage->getAttr('href');
+            }
+            if ($tpage->getPlainText() == '下一章') {
+                $page['next'] = $tpage->getAttr('href');
+            }
+        }
+        $page['mulu'] = '/' . $cata . '_' . $bookno . '/';
+
+        $this->assign('name', $name);
+        $this->assign('content', $content);
+        $this->assign('page', $page);
+
+        return $this->fetch();
     }
 }
