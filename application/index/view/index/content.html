@@ -3,14 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <title>{{$name}}</title>
+    <style>
+        body {
+            font-size: 2.5em;
+        }
+    </style>
 </head>
 <body>
 {{$content}}
 
+<br>
 <div class="page">
-    <a href="{{$page.prev}}">上一页</a>
-    <a href="{{$page.mulu}}">返回目录</a>
-    <a href="{{$page.next}}">下一页</a>
+    <a href="{{$page.prev|default=''}}">上一页</a>
+    <a href="{{$page.mulu|default=''}}">返回目录</a>
+    <a href="{{$page.next|default=''}}">下一页</a>
 </div>
+<br>
+<br>
+<br>
+<br>
+<br>
 </body>
 </html>
